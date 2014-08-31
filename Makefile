@@ -10,8 +10,8 @@ STRIP = $(HOST)strip
 DEPS= -lini
 
 DEFS+=-DUINPUT_FILE="\"/dev/uinput\""
-DEFS+=-DJOYSTICK_FILE=\""/dev/js0\""
-DEFS+=-DCONFIG_FILE=\""/boot/local/home/analog.conf\""
+DEFS+=-DJOYSTICK_FILE=\""/dev/input/js0\""
+DEFS+=-DCONFIG_FILE=\""/media/data/local/home/.miceinjoy/analog.conf\""
 
 SRC = 	main.c \
 	configure.c \
