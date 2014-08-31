@@ -39,6 +39,8 @@
 #include "analog.h"
 #include "configure.h"
 
+#define debug(...) /* printf(...) */;
+
 static struct uinput_user_dev uud = {
 	.name = "jz-mouse",
 	.id = { BUS_USB, 2,2,1 },
@@ -47,7 +49,7 @@ static struct uinput_user_dev uud = {
 int axis[2];
 
 float polling_rate 	= 1000000/66;
-float sensitivity		= 1/(MAX_ABS/5);
+float sensitivity	= 1/(MAX_ABS/5);
 
 void doMouse()
 {
@@ -66,7 +68,7 @@ void doMouse()
 	ioctl(uinput_id, UI_SET_EVBIT, EV_KEY);
 	
 	ioctl(uinput_id, UI_SET_RELBIT, REL_X);
-	ioctl(uinput_id, UI_SET_RELBIT, REL_Y);	
+	ioctl(uinput_id, UI_SET_RELBIT, REL_Y);
 	ioctl(uinput_id, UI_SET_RELBIT, REL_WHEEL);
 	
 	ioctl(uinput_id, UI_SET_KEYBIT, BTN_MOUSE);
@@ -90,14 +92,15 @@ void doMouse()
 			switch(ev.type){
 				case JS_EVENT_AXIS:
 					axis[(ev.number == ABS_X) ? 0: 1] = ev.value;
+					debug("x == %i (%i), y == %i (%i)\n", axis[0], (int)(axis[0]/6459), axis[1], (int)(axis[1]/6459));
 					break;
 				default:
 					break;
 			} 	
 		}
 		
-		report_ev(uinput_id, EV_REL, REL_X, axis[0]*sensitivity);
-		report_ev(uinput_id, EV_REL, REL_Y, axis[1]*sensitivity);
+		report_ev(uinput_id, EV_REL, REL_X, axis[0]/6459);
+		report_ev(uinput_id, EV_REL, REL_Y, axis[1]/6459);
  		report_ev(uinput_id, EV_SYN, SYN_REPORT, 0); 		
 
 	}
