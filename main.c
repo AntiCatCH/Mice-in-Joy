@@ -28,38 +28,6 @@
 
 int main(int argc, char *argv[])
 {
-#ifndef DEBUG
-	pid_t pid, sid;
-	
-	pid = fork();
-	if (pid < 0) {
-		printf("ERROR: Couldn't fork process.\n");
-		return -1;
-	}
-	
-	if (pid > 0) {
-		printf("Process forked at pid: %i\n", pid);
-		return 0;
-	}
-	
-	umask(0);
-	
-	sid = setsid();
-	
-	if (sid < 0) {
-		return -1;
-	}
-	
-	if ((chdir("/")) < 0) {
-		return -1;
-	}
-	
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	close(STDERR_FILENO);
-#endif
-	
 	doMouse();
-	
 	return 0;
 }
