@@ -48,16 +48,18 @@ static struct uinput_user_dev uud = {
 
 int axis[2];
 
-float polling_rate 	= 1000000/66;
+float polling_rate 	= 30000;
 float sensitivity	= 1/(MAX_ABS/5);
 
 void doMouse()
 {
-	FILE *joy_id;
+	FILE *joy_id, *key_id;
 	int uinput_id;
+	int ctrlstate = 0;
 	
 	doConfigure(CONFIG_FILE);
 	struct js_event ev;
+	struct input_event iv;
 	
 	uinput_id = open(UINPUT_FILE, O_WRONLY);
 	assert(uinput_id);
@@ -79,9 +81,12 @@ void doMouse()
 	assert(!ioctl(uinput_id, UI_DEV_CREATE));
 	
 	joy_id = fopen(JOYSTICK_FILE, "r");
+	key_id = fopen("/dev/input/event0", "r");
+	assert(key_id);
 	assert(joy_id);
 	
 	fcntl(fileno(joy_id), F_SETFL, O_NONBLOCK);
+	fcntl(fileno(key_id), F_SETFL, O_NONBLOCK);
 	
 	while(joy_id){
 		
@@ -98,9 +103,19 @@ void doMouse()
 					break;
 			} 	
 		}
+		while(fread(&iv, sizeof(iv), 1, key_id)) {
+			if(ctrlstate == 0 && iv.value == 1 && iv.code == KEY_LEFTCTRL) {
+				ctrlstate = 1;
+				report_ev(uinput_id, EV_KEY, BTN_MOUSE, 1);
+			}
+			if(ctrlstate == 1 && iv.value == 0  && iv.code == KEY_LEFTCTRL) {
+				ctrlstate = 0;
+				report_ev(uinput_id, EV_KEY, BTN_MOUSE, 0); 
+			}
+		}
 		
-		report_ev(uinput_id, EV_REL, REL_X, axis[0]/6459);
-		report_ev(uinput_id, EV_REL, REL_Y, axis[1]/6459);
+		report_ev(uinput_id, EV_REL, REL_X, axis[0]/3220);
+		report_ev(uinput_id, EV_REL, REL_Y, axis[1]/3220);
  		report_ev(uinput_id, EV_SYN, SYN_REPORT, 0); 		
 
 	}
